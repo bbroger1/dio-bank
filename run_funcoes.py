@@ -11,7 +11,7 @@ def menu():
     =>"""
 
 
-def depositar(conta, valor):
+def depositar(conta, valor, /):
     if valor > 0:
         conta[1] += valor
         conta[2].append(f"Depósito: R$ {valor:.2f}")
@@ -20,11 +20,11 @@ def depositar(conta, valor):
         return "Operação falhou! O valor informado é inválido."
 
 
-def sacar(conta, valor, LIMITE_VALOR_SAQUE, LIMITE_QUANTIDADE_SAQUES):
+def sacar(*, conta, valor, limite_valor_saque, limite_quantidade_saques):
 
     excedeu_saldo = valor > conta[1]
-    excedeu_limite = valor > LIMITE_VALOR_SAQUE
-    excedeu_saques = conta[5] >= LIMITE_QUANTIDADE_SAQUES
+    excedeu_limite = valor > limite_valor_saque
+    excedeu_saques = conta[5] >= limite_quantidade_saques
 
     if excedeu_saldo:
         return "Operação falhou! Você não tem saldo suficiente."
@@ -41,7 +41,7 @@ def sacar(conta, valor, LIMITE_VALOR_SAQUE, LIMITE_QUANTIDADE_SAQUES):
         return "Operação falhou! O valor informado é inválido."
 
 
-def visualizar_extrato(conta):
+def visualizar_extrato(conta, /):
     print(f"\n================ EXTRATO - Conta nr. {conta[3]}================")
     if not conta[2]:
         print("Não foram realizadas movimentações.")
@@ -111,7 +111,14 @@ def main():
                 print("Conta não localizada.")
             else:
                 valor = float(input("Informe o valor do saque: "))
-                print(sacar(conta, valor, LIMITE_VALOR_SAQUE, LIMITE_QUANTIDADE_SAQUES))
+                print(
+                    sacar(
+                        conta=conta,
+                        valor=valor,
+                        limite_valor_saque=LIMITE_VALOR_SAQUE,
+                        limite_quantidade_saques=LIMITE_QUANTIDADE_SAQUES,
+                    )
+                )
 
         elif opcao == "e":
             numero_conta = int(input("Informe o número da conta: "))
