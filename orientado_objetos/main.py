@@ -1,31 +1,7 @@
 from conta import Conta
 from cliente import Cliente
-
-
-def cadastrar_cliente(nome, data_nascimento, cpf, endereco, clientes):
-    cliente = Cliente(nome, data_nascimento, cpf, endereco)
-    clientes.append(cliente)
-    return f"Cliente {nome} cadastrado com sucesso."
-
-
-def cadastrar_conta(cpf, agencia, numero_conta, quantidade_saques, contas):
-    conta = Conta(agencia, numero_conta + 1, cpf, quantidade_saques)
-    contas.append(conta)
-    return f"Conta {conta.numero_conta} cadastrada com sucesso."
-
-
-def verifica_conta(numero_conta, contas):
-    for conta in contas:
-        if conta.numero_conta == numero_conta:
-            return conta
-    return None
-
-
-def verifica_cpf(cpf, clientes):
-    for cliente in clientes:
-        if cliente.cpf == cpf:
-            return True
-    return False
+from pessoaFisica import PessoaFisica
+from historico import Historico
 
 
 def menu():
@@ -34,6 +10,7 @@ def menu():
         [s] Sacar
         [e] Extrato
         [u] Cadastrar Cliente
+        [us] Listar Clientes
         [c] Cadastrar Conta
         [q] Sair
 
@@ -41,21 +18,19 @@ def menu():
 
 
 def main():
-    LIMITE_QUANTIDADE_SAQUES = 3
-    LIMITE_VALOR_SAQUE = 500
     AGENCIA = "0001"
-
     clientes = []
+    pessoas_fisicas = []
     contas = []
     numero_conta = 0
-    quantidade_saques = 0
+    historico = Historico([])
 
     while True:
         opcao = input(menu())
 
         if opcao == "d":
             numero_conta = int(input("Informe o número da conta: "))
-            conta = verifica_conta(numero_conta, contas)
+            conta = Conta.verifica_conta(numero_conta, contas)
             if not conta:
                 print("Conta não localizada.")
             else:
@@ -64,43 +39,52 @@ def main():
 
         elif opcao == "s":
             numero_conta = int(input("Informe o número da conta: "))
-            conta = verifica_conta(numero_conta, contas)
+            conta = Conta.verifica_conta(numero_conta, contas)
             if not conta:
                 print("Conta não localizada.")
             else:
                 valor = float(input("Informe o valor do saque: "))
-                print(conta.sacar(valor, LIMITE_VALOR_SAQUE, LIMITE_QUANTIDADE_SAQUES))
+                print(conta.sacar(valor))
 
         elif opcao == "e":
             numero_conta = int(input("Informe o número da conta: "))
-            conta = verifica_conta(numero_conta, contas)
+            conta = Conta.verifica_conta(numero_conta, contas)
             if not conta:
                 print("Conta não localizada.")
             else:
-                conta.visualizar_extrato()
+                historico.visualizar_historico(conta)
 
         elif opcao == "u":
+            cpf = input("CPF: ")
             nome = input("Nome: ")
             data_nascimento = input("Data de Nascimento: ")
-            cpf = input("CPF: ")
             endereco = input("Endereço: ")
-            if verifica_cpf(cpf, clientes):
+
+            if PessoaFisica.verifica_cpf(cpf, pessoas_fisicas):
                 print("CPF já cadastrado.")
             else:
-                print(cadastrar_cliente(nome, data_nascimento, cpf, endereco, clientes))
+                pessoa_fisica = PessoaFisica(cpf, nome, data_nascimento)
+                pessoas_fisicas.append(pessoa_fisica)
+                cliente = Cliente(endereco, contas, pessoa_fisica)
+                clientes.append(cliente)
+                print(f"Cliente {nome} cadastrado com sucesso.")
+
+        elif opcao == "us":
+            print("======== Lista de Clientes ========")
+            for pf in pessoas_fisicas:
+                print(f"Nome: {pf.nome} - CPF: {pf.cpf}")
 
         elif opcao == "c":
             cpf = input("CPF do cliente: ")
-            if not verifica_cpf(cpf, clientes):
+            cliente_encontrado = PessoaFisica.verifica_cpf(cpf, pessoas_fisicas)
+            if not cliente_encontrado:
                 print("Cliente não localizado.")
             else:
-                quantidade_saques = 0
+                conta = Conta(0.0, numero_conta + 1, 0, AGENCIA, cliente, historico)
+                contas.append(conta)
                 numero_conta += 1
-                print(
-                    cadastrar_conta(
-                        cpf, AGENCIA, numero_conta, quantidade_saques, contas
-                    )
-                )
+                print(f"Conta de número {numero_conta} cadastrada com sucesso.")
+                print(conta)
 
         elif opcao == "q":
             break
